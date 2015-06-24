@@ -10,10 +10,9 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:name=".FrescoApplication"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme.Design" >
         <activity
             android:name=".MainActivity"
-            android:theme="@style/AppTheme"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,6 +20,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ui.ViewPagerActivity" />
     </application>
 
 </manifest>

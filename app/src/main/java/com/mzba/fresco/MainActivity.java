@@ -1,5 +1,6 @@
 package com.mzba.fresco;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -18,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.mzba.fresco.ui.ImageListFragment;
+import com.mzba.fresco.ui.ViewPagerActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,17 +89,17 @@ public class MainActivity extends AppCompatActivity {
         Bundle bundle = new Bundle();
         bundle.putInt("type", 1);
         fragment.setArguments(bundle);
-        adapter.addFragment(fragment, "线性");
+        adapter.addFragment(fragment, "one");
         fragment = new ImageListFragment();
         bundle = new Bundle();
         bundle.putInt("type", 2);
         fragment.setArguments(bundle);
-        adapter.addFragment(fragment, "表格");
+        adapter.addFragment(fragment, "two");
         fragment = new ImageListFragment();
         bundle = new Bundle();
         bundle.putInt("type", 3);
         fragment.setArguments(bundle);
-        adapter.addFragment(fragment, "瀑布流");
+        adapter.addFragment(fragment, "three");
         viewPager.setAdapter(adapter);
     }
 
@@ -108,6 +110,10 @@ public class MainActivity extends AppCompatActivity {
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
                         menuItem.setChecked(true);
                         mDrawerLayout.closeDrawers();
+                        if (menuItem.getItemId() == R.id.nav_viewpager) {
+                            Intent intent = new Intent(MainActivity.this, ViewPagerActivity.class);
+                            startActivity(intent);
+                        }
                         return true;
                     }
                 });

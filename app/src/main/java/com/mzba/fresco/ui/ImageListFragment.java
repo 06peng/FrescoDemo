@@ -16,6 +16,7 @@
 
 package com.mzba.fresco.ui;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -29,14 +30,18 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.facebook.drawee.view.SimpleDraweeView;
+import com.mzba.fresco.MainActivity;
 import com.mzba.fresco.R;
 import com.mzba.fresco.utils.ImageUrlUtils;
 
 public class ImageListFragment extends Fragment {
 
+    private static MainActivity mActivity;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mActivity = (MainActivity) getActivity();
     }
 
     @Override
@@ -50,11 +55,11 @@ public class ImageListFragment extends Fragment {
         if (ImageListFragment.this.getArguments().getInt("type") == 1) {
             recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
         } else if (ImageListFragment.this.getArguments().getInt("type") == 2) {
-            GridLayoutManager layoutManager = new GridLayoutManager(recyclerView.getContext(), 3);
-            layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+            StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
             recyclerView.setLayoutManager(layoutManager);
         } else {
-            StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+            GridLayoutManager layoutManager = new GridLayoutManager(recyclerView.getContext(), 3);
+            layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
             recyclerView.setLayoutManager(layoutManager);
         }
         recyclerView.setAdapter(new SimpleStringRecyclerViewAdapter(recyclerView, ImageUrlUtils.getImageUrls()));
@@ -89,7 +94,7 @@ public class ImageListFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(final ViewHolder holder, int position) {
+        public void onBindViewHolder(final ViewHolder holder, final int position) {
             FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) holder.mImageView.getLayoutParams();
             if (mRecyclerView.getLayoutManager() instanceof GridLayoutManager) {
                 layoutParams.height = 200;
@@ -100,6 +105,15 @@ public class ImageListFragment extends Fragment {
             }
             Uri uri = Uri.parse(mValues[position]);
             holder.mImageView.setImageURI(uri);
+            holder.mImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(mActivity, ViewPagerActivity.class);
+                    intent.putExtra("position", position);
+                    mActivity.startActivity(intent);
+
+                }
+            });
         }
 
         @Override

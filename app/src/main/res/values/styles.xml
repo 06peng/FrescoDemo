@@ -7,4 +7,8 @@
         <item name="colorAccent">#FF4081</item>
     </style>
 
+    <style name="AppTheme.Design" parent="AppTheme">
+
+    </style>
+
 </resources>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.mzba.fresco.ui.widget.HackyViewPager. xmlns:android="http://schemas.android.com/apk/res/android"
+<com.mzba.fresco.ui.widget.HackyViewPager xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/view_pager"
+    android:background="#000000"
     android:layout_width="match_parent"
     android:layout_height="match_parent" />
