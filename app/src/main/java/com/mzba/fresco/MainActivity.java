@@ -18,10 +18,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.mzba.fresco.ui.GifActivity;
 import com.mzba.fresco.ui.ImageListFragment;
 import com.mzba.fresco.ui.SubsamplingScaleActivity;
 import com.mzba.fresco.ui.ViewPagerActivity;
-import com.mzba.fresco.ui.widget.GifActivity;
 
 import java.util.ArrayList;
 import java.util.List;
