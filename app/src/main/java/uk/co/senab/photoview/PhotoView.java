@@ -31,6 +31,7 @@ import com.facebook.common.references.CloseableReference;
 import com.facebook.datasource.DataSource;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.controller.BaseControllerListener;
+import com.facebook.drawee.drawable.ProgressBarDrawable;
 import com.facebook.drawee.generic.GenericDraweeHierarchy;
 import com.facebook.drawee.generic.GenericDraweeHierarchyBuilder;
 import com.facebook.drawee.interfaces.DraweeController;
@@ -58,10 +59,12 @@ public class PhotoView extends ImageView implements IPhotoView {
 
     public PhotoView(Context context) {
         this(context, null);
+        init();
     }
 
     public PhotoView(Context context, AttributeSet attr) {
         this(context, attr, 0);
+        init();
     }
 
     public PhotoView(Context context, AttributeSet attr, int defStyle) {
@@ -81,10 +84,12 @@ public class PhotoView extends ImageView implements IPhotoView {
         }
 
         if (mDraweeHolder == null) {
-            GenericDraweeHierarchy hierarchy = new GenericDraweeHierarchyBuilder(getResources()).build();
+            GenericDraweeHierarchy hierarchy = new GenericDraweeHierarchyBuilder(getResources())
+                    .setFadeDuration(300)
+//                    .setProgressBarImage();
+                    .build();
             mDraweeHolder = DraweeHolder.create(hierarchy, getContext());
         }
-
     }
 
     /**
@@ -355,10 +360,15 @@ public class PhotoView extends ImageView implements IPhotoView {
     }
 
     public void setImageUri(String url) {
+        GenericDraweeHierarchyBuilder builder =
+                new GenericDraweeHierarchyBuilder(getResources());
+        GenericDraweeHierarchy hierarchy = builder
+                .setFadeDuration(300)
+                .setProgressBarImage(new ProgressBarDrawable())
+                .build();
         ImageRequest imageRequest = ImageRequestBuilder.newBuilderWithSource(Uri.parse(url)).build();
         ImagePipeline imagePipeline = Fresco.getImagePipeline();
-        final DataSource<CloseableReference<CloseableImage>> dataSource =
-                imagePipeline.fetchImageFromBitmapCache(imageRequest, this);
+        final DataSource<CloseableReference<CloseableImage>> dataSource = imagePipeline.fetchDecodedImage(imageRequest, this);
         DraweeController controller = Fresco.newDraweeControllerBuilder()
                 .setOldController(mDraweeHolder.getController())
                 .setImageRequest(imageRequest)
@@ -395,8 +405,7 @@ public class PhotoView extends ImageView implements IPhotoView {
                 .setResizeOptions(new ResizeOptions(view_width_dp, view_height_dp))
                 .build();
         ImagePipeline imagePipeline = Fresco.getImagePipeline();
-        final DataSource<CloseableReference<CloseableImage>> dataSource =
-                imagePipeline.fetchDecodedImage(imageRequest, this);//fetchImageFromBitmapCache(imageRequest, this)
+        final DataSource<CloseableReference<CloseableImage>> dataSource = imagePipeline.fetchDecodedImage(imageRequest, this);
         DraweeController controller = Fresco.newDraweeControllerBuilder()
                 .setOldController(mDraweeHolder.getController())
                 .setImageRequest(imageRequest)

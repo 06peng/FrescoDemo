@@ -21,6 +21,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.ViewPagerActivity" />
+        <activity android:name=".ui.SubsamplingScaleActivity" />
+        <activity android:name=".ui.widget.GifActivity" />
     </application>
 
 </manifest>

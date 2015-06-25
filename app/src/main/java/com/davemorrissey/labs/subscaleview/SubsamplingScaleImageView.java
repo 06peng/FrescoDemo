@@ -29,6 +29,8 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.Animatable;
+import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -36,6 +38,7 @@ import android.os.Build.VERSION;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.FloatMath;
@@ -45,6 +48,21 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.facebook.common.references.CloseableReference;
+import com.facebook.datasource.DataSource;
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.controller.BaseControllerListener;
+import com.facebook.drawee.generic.GenericDraweeHierarchy;
+import com.facebook.drawee.generic.GenericDraweeHierarchyBuilder;
+import com.facebook.drawee.interfaces.DraweeController;
+import com.facebook.drawee.view.DraweeHolder;
+import com.facebook.imagepipeline.common.ResizeOptions;
+import com.facebook.imagepipeline.core.ImagePipeline;
+import com.facebook.imagepipeline.image.CloseableImage;
+import com.facebook.imagepipeline.image.CloseableStaticBitmap;
+import com.facebook.imagepipeline.image.ImageInfo;
+import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.mzba.fresco.R.styleable;
 import com.davemorrissey.labs.subscaleview.decoder.CompatDecoderFactory;
 import com.davemorrissey.labs.subscaleview.decoder.DecoderFactory;
@@ -74,6 +92,9 @@ import java.util.Map;
 public class SubsamplingScaleImageView extends View {
 
     private static final String TAG = SubsamplingScaleImageView.class.getSimpleName();
+
+    DraweeHolder<GenericDraweeHierarchy> mDraweeHolder;
+    private CloseableReference<CloseableImage> imageReference = null;
 
     /** Attempt to use EXIF information on the image to rotate it. Works for external files only. */
     public static final int ORIENTATION_USE_EXIF = -1;
@@ -207,7 +228,7 @@ public class SubsamplingScaleImageView extends View {
     private float vDistStart;
 
     // Current quickscale state
-    private final float quickScaleThreshold;
+    private float quickScaleThreshold;
     private PointF quickScaleCenter;
     private float quickScaleLastDistance;
     private PointF quickScaleLastPoint;
@@ -243,8 +264,27 @@ public class SubsamplingScaleImageView extends View {
     private float[] srcArray = new float[8];
     private float[] dstArray = new float[8];
 
+    public SubsamplingScaleImageView(Context context, AttributeSet attr, int defStyle) {
+        super(context, attr, defStyle);
+        init(context, attr);
+    }
+
     public SubsamplingScaleImageView(Context context, AttributeSet attr) {
-        super(context, attr);
+        super(context, attr, 0);
+        init(context, attr);
+    }
+
+    public SubsamplingScaleImageView(Context context) {
+        this(context, null);
+        init(context, null);
+    }
+
+    private void init(Context context, AttributeSet attr) {
+        if (mDraweeHolder == null) {
+            GenericDraweeHierarchy hierarchy = new GenericDraweeHierarchyBuilder(getResources()).build();
+            mDraweeHolder = DraweeHolder.create(hierarchy, getContext());
+        }
+
         setMinimumDpi(160);
         setDoubleTapZoomDpi(160);
         setGestureDetector(context);
@@ -288,12 +328,7 @@ public class SubsamplingScaleImageView extends View {
             }
             typedAttr.recycle();
         }
-
         quickScaleThreshold = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, context.getResources().getDisplayMetrics());
-    }
-
-    public SubsamplingScaleImageView(Context context) {
-        this(context, null);
     }
 
     /**
@@ -2599,6 +2634,120 @@ public class SubsamplingScaleImageView extends View {
         @Override public void onImageLoadError(Exception e) { }
         @Override public void onTileLoadError(Exception e) { }
 
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        mDraweeHolder.onDetach();
+        super.onDetachedFromWindow();
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        mDraweeHolder.onAttach();
+        super.onAttachedToWindow();
+    }
+
+    @Override
+    protected boolean verifyDrawable(Drawable dr) {
+        if (dr == mDraweeHolder.getHierarchy().getTopLevelDrawable()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void onStartTemporaryDetach() {
+        super.onStartTemporaryDetach();
+        mDraweeHolder.onDetach();
+    }
+
+    @Override
+    public void onFinishTemporaryDetach() {
+        super.onFinishTemporaryDetach();
+        mDraweeHolder.onAttach();
+    }
+
+    public void setImageUri(String url) {
+        ImageRequest imageRequest = ImageRequestBuilder.newBuilderWithSource(Uri.parse(url)).build();
+        ImagePipeline imagePipeline = Fresco.getImagePipeline();
+        final DataSource<CloseableReference<CloseableImage>> dataSource = imagePipeline.fetchDecodedImage(imageRequest, this);
+        DraweeController controller = Fresco.newDraweeControllerBuilder()
+                .setOldController(mDraweeHolder.getController())
+                .setImageRequest(imageRequest)
+                .setControllerListener(new BaseControllerListener<ImageInfo>() {
+                    @Override
+                    public void onFinalImageSet(String s, @Nullable ImageInfo imageInfo, @Nullable Animatable animatable) {
+                        try {
+                            imageReference = dataSource.getResult();
+                            if (imageReference != null) {
+                                CloseableImage image = imageReference.get();
+                                // do something with the image
+                                if (image != null && image instanceof CloseableStaticBitmap) {
+                                    CloseableStaticBitmap closeableStaticBitmap = (CloseableStaticBitmap) image;
+                                    Bitmap bitmap = closeableStaticBitmap.getUnderlyingBitmap();
+                                    if (bitmap != null) {
+                                        setImage(ImageSource.bitmap(bitmap));
+                                        setMaxScale(SubsamplingScaleImageView.SCALE_TYPE_CUSTOM);
+                                        if ((getSHeight() > getHeight()) && getSHeight() / getSWidth() > getHeight() / getWidth()) {
+                                            PointF center = new PointF(getSWidth() / 2, 0);
+                                            float targetScale = Math.max(getWidth() / (float) getSWidth(), getHeight() / (float) getSHeight());
+                                            setScaleAndCenter(targetScale, center);
+                                        }
+                                    }
+                                }
+                            }
+                        } finally {
+                            dataSource.close();
+                            CloseableReference.closeSafely(imageReference);
+                        }
+                    }
+                })
+                .setTapToRetryEnabled(true)
+                .build();
+        mDraweeHolder.setController(controller);
+    }
+
+    public void setImageUri(String uri, int width, int height) {
+        ImageRequest imageRequest = ImageRequestBuilder.newBuilderWithSource(Uri.parse(uri))
+                .setAutoRotateEnabled(true)
+                .setResizeOptions(new ResizeOptions(width, height))
+                .build();
+        ImagePipeline imagePipeline = Fresco.getImagePipeline();
+        final DataSource<CloseableReference<CloseableImage>> dataSource = imagePipeline.fetchDecodedImage(imageRequest, this);
+        DraweeController controller = Fresco.newDraweeControllerBuilder()
+                .setOldController(mDraweeHolder.getController())
+                .setImageRequest(imageRequest)
+                .setControllerListener(new BaseControllerListener<ImageInfo>() {
+                    @Override
+                    public void onFinalImageSet(String s, @Nullable ImageInfo imageInfo, @Nullable Animatable animatable) {
+                        try {
+                            imageReference = dataSource.getResult();
+                            if (imageReference != null) {
+                                CloseableImage image = imageReference.get();
+                                if (image != null && image instanceof CloseableStaticBitmap) {
+                                    CloseableStaticBitmap closeableStaticBitmap = (CloseableStaticBitmap) image;
+                                    Bitmap bitmap = closeableStaticBitmap.getUnderlyingBitmap();
+                                    if (bitmap != null) {
+                                        setImage(ImageSource.bitmap(bitmap));
+                                        setMaxScale(SubsamplingScaleImageView.SCALE_TYPE_CUSTOM);
+                                        if ((getSHeight() > getHeight()) && getSHeight() / getSWidth() > getHeight() / getWidth()) {
+                                            PointF center = new PointF(getSWidth() / 2, 0);
+                                            float targetScale = Math.max(getWidth() / (float) getSWidth(), getHeight() / (float) getSHeight());
+                                            setScaleAndCenter(targetScale, center);
+                                        }
+                                    }
+                                }
+                            }
+                        } finally {
+                            dataSource.close();
+                            CloseableReference.closeSafely(imageReference);
+                        }
+                    }
+                })
+                .setTapToRetryEnabled(true)
+                .build();
+        mDraweeHolder.setController(controller);
     }
 
 }

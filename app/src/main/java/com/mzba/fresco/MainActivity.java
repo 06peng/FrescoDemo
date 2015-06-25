@@ -19,7 +19,9 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.mzba.fresco.ui.ImageListFragment;
+import com.mzba.fresco.ui.SubsamplingScaleActivity;
 import com.mzba.fresco.ui.ViewPagerActivity;
+import com.mzba.fresco.ui.widget.GifActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,6 +114,12 @@ public class MainActivity extends AppCompatActivity {
                         mDrawerLayout.closeDrawers();
                         if (menuItem.getItemId() == R.id.nav_viewpager) {
                             Intent intent = new Intent(MainActivity.this, ViewPagerActivity.class);
+                            startActivity(intent);
+                        } else if (menuItem.getItemId() == R.id.nav_subsamplingScale) {
+                            Intent intent = new Intent(MainActivity.this, SubsamplingScaleActivity.class);
+                            startActivity(intent);
+                        } else if (menuItem.getItemId() == R.id.nav_gifview) {
+                            Intent intent = new Intent(MainActivity.this, GifActivity.class);
                             startActivity(intent);
                         }
                         return true;
