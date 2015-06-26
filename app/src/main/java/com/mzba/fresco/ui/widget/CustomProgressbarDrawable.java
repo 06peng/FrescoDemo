@@ -38,7 +38,6 @@ public class CustomProgressbarDrawable extends Drawable {
     @Override
     protected boolean onLevelChange(int level) {
         int progress = (int) ((level / 10000.0) * 100);
-        System.out.println("==================" + progress);
         if (mListener != null) {
             mListener.onUpdate(progress);
         }

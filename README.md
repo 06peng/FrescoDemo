@@ -10,6 +10,8 @@ The photo is from
 
 ![image](https://github.com/06peng/FrescoDemo/blob/master/screeshots/device-2015-06-26-161029.png)
 
+![image](https://github.com/06peng/FrescoDemo/blob/master/screeshots/1.gif)
+
 # Open source projects
 
 <p><a href="https://github.com/facebook/fresco">fresco</a>
