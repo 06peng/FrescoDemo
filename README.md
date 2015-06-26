@@ -3,6 +3,9 @@ A demo use Fresco to load image and base on Chris Banes' s Android Design librar
 
 # Screenshots
 
+![image](https://github.com/06peng/FrescoDemo/row/master/screeshots/device-2015-06-26-160956.png)
+
+![image](https://github.com/06peng/FrescoDemo/row/master/screeshots/device-2015-06-26-161029.png)
 
 # Open source projects
 
