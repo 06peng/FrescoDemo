@@ -43,12 +43,14 @@ import com.facebook.imagepipeline.image.CloseableStaticBitmap;
 import com.facebook.imagepipeline.image.ImageInfo;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
+import com.mzba.fresco.ui.widget.CustomProgressbarDrawable;
+import com.mzba.fresco.ui.widget.ImageDownloadListener;
 
 import uk.co.senab.photoview.PhotoViewAttacher.OnMatrixChangedListener;
 import uk.co.senab.photoview.PhotoViewAttacher.OnPhotoTapListener;
 import uk.co.senab.photoview.PhotoViewAttacher.OnViewTapListener;
 
-public class PhotoView extends ImageView implements IPhotoView {
+public class PhotoView extends ImageView implements IPhotoView, ImageDownloadListener {
 
     private PhotoViewAttacher mAttacher;
 
@@ -56,6 +58,7 @@ public class PhotoView extends ImageView implements IPhotoView {
 
     DraweeHolder<GenericDraweeHierarchy> mDraweeHolder;
     private CloseableReference<CloseableImage> imageReference = null;
+    private ImageDownloadListener mDownloadListener = null;
 
     public PhotoView(Context context) {
         this(context, null);
@@ -86,10 +89,14 @@ public class PhotoView extends ImageView implements IPhotoView {
         if (mDraweeHolder == null) {
             GenericDraweeHierarchy hierarchy = new GenericDraweeHierarchyBuilder(getResources())
                     .setFadeDuration(300)
-//                    .setProgressBarImage();
+                    .setProgressBarImage(new CustomProgressbarDrawable(this))
                     .build();
             mDraweeHolder = DraweeHolder.create(hierarchy, getContext());
         }
+    }
+
+    public void setImageDownloadListener(ImageDownloadListener mDownloadListener) {
+        this.mDownloadListener = mDownloadListener;
     }
 
     /**
@@ -360,12 +367,6 @@ public class PhotoView extends ImageView implements IPhotoView {
     }
 
     public void setImageUri(String url) {
-        GenericDraweeHierarchyBuilder builder =
-                new GenericDraweeHierarchyBuilder(getResources());
-        GenericDraweeHierarchy hierarchy = builder
-                .setFadeDuration(300)
-                .setProgressBarImage(new ProgressBarDrawable())
-                .build();
         ImageRequest imageRequest = ImageRequestBuilder.newBuilderWithSource(Uri.parse(url)).build();
         ImagePipeline imagePipeline = Fresco.getImagePipeline();
         final DataSource<CloseableReference<CloseableImage>> dataSource = imagePipeline.fetchDecodedImage(imageRequest, this);
@@ -399,10 +400,10 @@ public class PhotoView extends ImageView implements IPhotoView {
         mDraweeHolder.setController(controller);
     }
 
-    public void setImageUri(String uri, int view_width_dp, int view_height_dp) {
+    public void setImageUri(String uri, int width, int height) {
         ImageRequest imageRequest = ImageRequestBuilder.newBuilderWithSource(Uri.parse(uri))
                 .setAutoRotateEnabled(true)
-                .setResizeOptions(new ResizeOptions(view_width_dp, view_height_dp))
+                .setResizeOptions(new ResizeOptions(width, height))
                 .build();
         ImagePipeline imagePipeline = Fresco.getImagePipeline();
         final DataSource<CloseableReference<CloseableImage>> dataSource = imagePipeline.fetchDecodedImage(imageRequest, this);
@@ -436,4 +437,10 @@ public class PhotoView extends ImageView implements IPhotoView {
     }
 
 
+    @Override
+    public void onUpdate(int progress) {
+        if (mDownloadListener != null) {
+            mDownloadListener.onUpdate(progress);
+        }
+    }
 }

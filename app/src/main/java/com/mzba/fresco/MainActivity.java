@@ -120,6 +120,9 @@ public class MainActivity extends AppCompatActivity {
                         } else if (menuItem.getItemId() == R.id.nav_gifview) {
                             Intent intent = new Intent(MainActivity.this, GifActivity.class);
                             startActivity(intent);
+                        } else if (menuItem.getItemId() == R.id.nav_home) {
+                            Intent intent = new Intent(MainActivity.this, GifActivity.class);
+                            startActivity(intent);
                         }
                         return true;
                     }

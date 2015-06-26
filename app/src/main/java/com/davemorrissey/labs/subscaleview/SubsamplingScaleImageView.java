@@ -70,6 +70,8 @@ import com.davemorrissey.labs.subscaleview.decoder.ImageDecoder;
 import com.davemorrissey.labs.subscaleview.decoder.ImageRegionDecoder;
 import com.davemorrissey.labs.subscaleview.decoder.SkiaImageDecoder;
 import com.davemorrissey.labs.subscaleview.decoder.SkiaImageRegionDecoder;
+import com.mzba.fresco.ui.widget.CustomProgressbarDrawable;
+import com.mzba.fresco.utils.AndroidUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -281,7 +283,9 @@ public class SubsamplingScaleImageView extends View {
 
     private void init(Context context, AttributeSet attr) {
         if (mDraweeHolder == null) {
-            GenericDraweeHierarchy hierarchy = new GenericDraweeHierarchyBuilder(getResources()).build();
+            GenericDraweeHierarchyBuilder builder = new GenericDraweeHierarchyBuilder(getResources());
+            GenericDraweeHierarchy hierarchy = builder.setProgressBarImage(new CustomProgressbarDrawable(null))
+                    .build();
             mDraweeHolder = DraweeHolder.create(hierarchy, getContext());
         }
 
@@ -2682,16 +2686,21 @@ public class SubsamplingScaleImageView extends View {
                             imageReference = dataSource.getResult();
                             if (imageReference != null) {
                                 CloseableImage image = imageReference.get();
-                                // do something with the image
                                 if (image != null && image instanceof CloseableStaticBitmap) {
                                     CloseableStaticBitmap closeableStaticBitmap = (CloseableStaticBitmap) image;
                                     Bitmap bitmap = closeableStaticBitmap.getUnderlyingBitmap();
                                     if (bitmap != null) {
                                         setImage(ImageSource.bitmap(bitmap));
                                         setMaxScale(SubsamplingScaleImageView.SCALE_TYPE_CUSTOM);
-                                        if ((getSHeight() > getHeight()) && getSHeight() / getSWidth() > getHeight() / getWidth()) {
+                                        int width = getWidth();
+                                        int height = getHeight();
+                                        if (width == 0 || height == 0) {
+                                            width = AndroidUtils.getScreenWidth(getContext());
+                                            height = AndroidUtils.getScreenHeight(getContext());
+                                        }
+                                        if ((getSHeight() > height) && getSHeight() / getSWidth() > height / width) {
                                             PointF center = new PointF(getSWidth() / 2, 0);
-                                            float targetScale = Math.max(getWidth() / (float) getSWidth(), getHeight() / (float) getSHeight());
+                                            float targetScale = Math.max(width / (float) getSWidth(), height / (float) getSHeight());
                                             setScaleAndCenter(targetScale, center);
                                         }
                                     }
@@ -2708,7 +2717,7 @@ public class SubsamplingScaleImageView extends View {
         mDraweeHolder.setController(controller);
     }
 
-    public void setImageUri(String uri, int width, int height) {
+    public void setImageUri(String uri, final int width, int height) {
         ImageRequest imageRequest = ImageRequestBuilder.newBuilderWithSource(Uri.parse(uri))
                 .setAutoRotateEnabled(true)
                 .setResizeOptions(new ResizeOptions(width, height))
@@ -2731,6 +2740,9 @@ public class SubsamplingScaleImageView extends View {
                                     if (bitmap != null) {
                                         setImage(ImageSource.bitmap(bitmap));
                                         setMaxScale(SubsamplingScaleImageView.SCALE_TYPE_CUSTOM);
+                                        if (getSWidth() == 0) {
+                                            sWidth = bitmap.getWidth();
+                                        }
                                         if ((getSHeight() > getHeight()) && getSHeight() / getSWidth() > getHeight() / getWidth()) {
                                             PointF center = new PointF(getSWidth() / 2, 0);
                                             float targetScale = Math.max(getWidth() / (float) getSWidth(), getHeight() / (float) getSHeight());
