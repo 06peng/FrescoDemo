@@ -1,6 +1,9 @@
 # Description
 A demo use Fresco to load image and base on Chris Banes' s Android Design library
 
+It seem that not very perfect by loading GIF with progressbar, I think may be after the image downloaded, it need much time to handle the GIF
+ and show it.
+
 The photo is from
 <p><a href="http://www.pexels.com/">http://www.pexels.com/</a>
 
@@ -9,8 +12,6 @@ The photo is from
 ![image](https://github.com/06peng/FrescoDemo/blob/master/screeshots/device-2015-06-26-160956.png)
 
 ![image](https://github.com/06peng/FrescoDemo/blob/master/screeshots/device-2015-06-26-161029.png)
-
-![image](https://github.com/06peng/FrescoDemo/blob/master/screeshots/1.gif)
 
 # Open source projects
 
