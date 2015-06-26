@@ -110,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        menuItem.setChecked(true);
                         mDrawerLayout.closeDrawers();
                         if (menuItem.getItemId() == R.id.nav_viewpager) {
                             Intent intent = new Intent(MainActivity.this, ViewPagerActivity.class);

@@ -38,9 +38,11 @@
     <item android:title="Sub items">
         <menu>
             <item
+                android:id="@+id/nav_sub_item1"
                 android:icon="@drawable/ic_dashboard"
                 android:title="Sub item 1" />
             <item
+                android:id="@+id/nav_sub_item2"
                 android:icon="@drawable/ic_forum"
                 android:title="Sub item 2" />
         </menu>
