@@ -1,6 +1,9 @@
 # Description
 A demo use Fresco to load image and base on Chris Banes' s Android Design library
 
+The photo is from
+<p><a href="http://www.pexels.com/">http://www.pexels.com/</a>
+
 # Screenshots
 
 ![image](https://github.com/06peng/FrescoDemo/blob/master/screeshots/device-2015-06-26-160956.png)
