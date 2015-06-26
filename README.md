@@ -1,7 +1,7 @@
 # Description
 A demo use Fresco to load image and base on Chris Banes' s Android Design library
 
-It seem that not very perfect by loading GIF with progressbar, I think may be after the image downloaded, it need much time to handle the GIF
+It seems that not very perfect by loading GIF with progressbar, I think may be after the image downloaded, it needs much time to handle the GIF
  and show it.
 
 The photo is from
