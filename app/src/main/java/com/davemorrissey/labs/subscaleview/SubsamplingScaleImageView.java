@@ -2740,12 +2740,15 @@ public class SubsamplingScaleImageView extends View {
                                     if (bitmap != null) {
                                         setImage(ImageSource.bitmap(bitmap));
                                         setMaxScale(SubsamplingScaleImageView.SCALE_TYPE_CUSTOM);
-                                        if (getSWidth() == 0) {
-                                            sWidth = bitmap.getWidth();
+                                        int width = getWidth();
+                                        int height = getHeight();
+                                        if (width == 0 || height == 0) {
+                                            width = AndroidUtils.getScreenWidth(getContext());
+                                            height = AndroidUtils.getScreenHeight(getContext());
                                         }
-                                        if ((getSHeight() > getHeight()) && getSHeight() / getSWidth() > getHeight() / getWidth()) {
+                                        if ((getSHeight() > height) && getSHeight() / getSWidth() > height / width) {
                                             PointF center = new PointF(getSWidth() / 2, 0);
-                                            float targetScale = Math.max(getWidth() / (float) getSWidth(), getHeight() / (float) getSHeight());
+                                            float targetScale = Math.max(width / (float) getSWidth(), height / (float) getSHeight());
                                             setScaleAndCenter(targetScale, center);
                                         }
                                     }

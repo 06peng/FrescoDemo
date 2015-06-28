@@ -23,6 +23,7 @@
         <activity android:name=".ui.ViewPagerActivity" />
         <activity android:name=".ui.SubsamplingScaleActivity" />
         <activity android:name=".ui.GifActivity" />
+        <activity android:name=".ui.CustomGifViewActivity" />
     </application>
 
 </manifest>

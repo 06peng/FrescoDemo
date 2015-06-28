@@ -10,7 +10,7 @@ import com.mzba.fresco.ui.widget.CustomGifView;
 /**
  * Created by 06peng on 2015/6/25.
  */
-public class GifActivity extends AppCompatActivity {
+public class CustomGifViewActivity extends AppCompatActivity {
 
     private CustomGifView mImageView;
     private String url = "http://ww2.sinaimg.cn/large/dd412be4gw1esr6ijoebog208e0e1qv6.gif";

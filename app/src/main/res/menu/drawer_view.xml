@@ -32,7 +32,7 @@
         <item
             android:id="@+id/nav_gifview"
             android:icon="@drawable/ic_forum"
-            android:title="GifView" />
+            android:title="CustomGifView" />
     </group>
 
     <item android:title="Sub items">

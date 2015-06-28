@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.mzba.fresco.ui.CustomGifViewActivity;
 import com.mzba.fresco.ui.GifActivity;
 import com.mzba.fresco.ui.ImageListFragment;
 import com.mzba.fresco.ui.SubsamplingScaleActivity;
@@ -118,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
                             Intent intent = new Intent(MainActivity.this, SubsamplingScaleActivity.class);
                             startActivity(intent);
                         } else if (menuItem.getItemId() == R.id.nav_gifview) {
-                            Intent intent = new Intent(MainActivity.this, GifActivity.class);
+                            Intent intent = new Intent(MainActivity.this, CustomGifViewActivity.class);
                             startActivity(intent);
                         } else if (menuItem.getItemId() == R.id.nav_home) {
                             Intent intent = new Intent(MainActivity.this, GifActivity.class);

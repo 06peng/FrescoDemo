@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.facebook.drawee.view.SimpleDraweeView
+    <pl.droidsonroids.gif.GifImageView
         android:id="@+id/gifview"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
