@@ -20,7 +20,7 @@
         <item
             android:id="@+id/nav_home"
             android:icon="@drawable/ic_dashboard"
-            android:title="ProgressDrawable" />
+            android:title="SimpleDraweeView" />
         <item
             android:id="@+id/nav_viewpager"
             android:icon="@drawable/ic_event"
