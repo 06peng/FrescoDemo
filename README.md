@@ -7,12 +7,13 @@ It seems that not very perfect by loading GIF with progressbar, I think may be a
 SubsamplingScaleImageView appear a problem like this:Bitmap too large to be uploaded into a texture (440x4390, max=4096x4096), If the image is too large.
 So I use PooledByteBuffer instead of CloseableImage.
 
-### Code
+```Java
     bytes = dataSource.getResult();
     PooledByteBuffer pooledByteBuffer = bytes.get();
     PooledByteBufferInputStream sourceIs = new PooledByteBufferInputStream(pooledByteBuffer);
     BufferedInputStream bis = new BufferedInputStream(sourceIs);
     //TODO something
+```
 
 The photos is from
 <p><a href="http://www.pexels.com/">http://www.pexels.com/</a>
