@@ -2,7 +2,6 @@ package com.mzba.fresco.ui;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
@@ -15,8 +14,7 @@ import com.mzba.fresco.R;
 public class SubsamplingScaleActivity extends AppCompatActivity {
 
     private SubsamplingScaleImageView mImageView;
-    private String url = "http://ww2.sinaimg.cn/large/612edf3ajw1etgaryxgbnj20c82f07f8.jpg";
-
+    private String url = "http://ww3.sinaimg.cn/bmiddle/a20a9b80jw1etmbognz7rj20cs3jiqa6.jpg";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

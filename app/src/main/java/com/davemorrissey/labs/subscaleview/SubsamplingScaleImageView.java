@@ -48,6 +48,12 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.davemorrissey.labs.subscaleview.decoder.CompatDecoderFactory;
+import com.davemorrissey.labs.subscaleview.decoder.DecoderFactory;
+import com.davemorrissey.labs.subscaleview.decoder.ImageDecoder;
+import com.davemorrissey.labs.subscaleview.decoder.ImageRegionDecoder;
+import com.davemorrissey.labs.subscaleview.decoder.SkiaImageDecoder;
+import com.davemorrissey.labs.subscaleview.decoder.SkiaImageRegionDecoder;
 import com.facebook.common.references.CloseableReference;
 import com.facebook.datasource.DataSource;
 import com.facebook.drawee.backends.pipeline.Fresco;
@@ -61,18 +67,21 @@ import com.facebook.imagepipeline.core.ImagePipeline;
 import com.facebook.imagepipeline.image.CloseableImage;
 import com.facebook.imagepipeline.image.CloseableStaticBitmap;
 import com.facebook.imagepipeline.image.ImageInfo;
+import com.facebook.imagepipeline.memory.PooledByteBuffer;
+import com.facebook.imagepipeline.memory.PooledByteBufferInputStream;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.mzba.fresco.R.styleable;
-import com.davemorrissey.labs.subscaleview.decoder.CompatDecoderFactory;
-import com.davemorrissey.labs.subscaleview.decoder.DecoderFactory;
-import com.davemorrissey.labs.subscaleview.decoder.ImageDecoder;
-import com.davemorrissey.labs.subscaleview.decoder.ImageRegionDecoder;
-import com.davemorrissey.labs.subscaleview.decoder.SkiaImageDecoder;
-import com.davemorrissey.labs.subscaleview.decoder.SkiaImageRegionDecoder;
 import com.mzba.fresco.ui.widget.CustomProgressbarDrawable;
 import com.mzba.fresco.utils.AndroidUtils;
+import com.mzba.fresco.utils.cache.FileCache;
+import com.mzba.fresco.utils.cache.FileUtils;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -97,6 +106,7 @@ public class SubsamplingScaleImageView extends View {
 
     DraweeHolder<GenericDraweeHierarchy> mDraweeHolder;
     private CloseableReference<CloseableImage> imageReference = null;
+    private CloseableReference<PooledByteBuffer> bytes;
 
     /** Attempt to use EXIF information on the image to rotate it. Works for external files only. */
     public static final int ORIENTATION_USE_EXIF = -1;
@@ -2672,10 +2682,10 @@ public class SubsamplingScaleImageView extends View {
         mDraweeHolder.onAttach();
     }
 
-    public void setImageUri(String url) {
+    public void setImageUri(final String url) {
         ImageRequest imageRequest = ImageRequestBuilder.newBuilderWithSource(Uri.parse(url)).build();
         ImagePipeline imagePipeline = Fresco.getImagePipeline();
-        final DataSource<CloseableReference<CloseableImage>> dataSource = imagePipeline.fetchDecodedImage(imageRequest, this);
+        final DataSource<CloseableReference<PooledByteBuffer>> dataSource = imagePipeline.fetchEncodedImage(imageRequest, this);
         DraweeController controller = Fresco.newDraweeControllerBuilder()
                 .setOldController(mDraweeHolder.getController())
                 .setImageRequest(imageRequest)
@@ -2683,32 +2693,38 @@ public class SubsamplingScaleImageView extends View {
                     @Override
                     public void onFinalImageSet(String s, @Nullable ImageInfo imageInfo, @Nullable Animatable animatable) {
                         try {
-                            imageReference = dataSource.getResult();
-                            if (imageReference != null) {
-                                CloseableImage image = imageReference.get();
-                                if (image != null && image instanceof CloseableStaticBitmap) {
-                                    CloseableStaticBitmap closeableStaticBitmap = (CloseableStaticBitmap) image;
-                                    Bitmap bitmap = closeableStaticBitmap.getUnderlyingBitmap();
-                                    if (bitmap != null) {
-                                        setImage(ImageSource.bitmap(bitmap));
-                                        setMaxScale(SubsamplingScaleImageView.SCALE_TYPE_CUSTOM);
-                                        int width = getWidth();
-                                        int height = getHeight();
-                                        if (width == 0 || height == 0) {
-                                            width = AndroidUtils.getScreenWidth(getContext());
-                                            height = AndroidUtils.getScreenHeight(getContext());
-                                        }
-                                        if ((getSHeight() > height) && getSHeight() / getSWidth() > height / width) {
-                                            PointF center = new PointF(getSWidth() / 2, 0);
-                                            float targetScale = Math.max(width / (float) getSWidth(), height / (float) getSHeight());
-                                            setScaleAndCenter(targetScale, center);
-                                        }
-                                    }
+                            bytes = dataSource.getResult();
+                            if (bytes != null) {
+                                PooledByteBuffer pooledByteBuffer = bytes.get();
+                                PooledByteBufferInputStream sourceIs = new PooledByteBufferInputStream(pooledByteBuffer);
+                                BufferedInputStream bis = new BufferedInputStream(sourceIs);
+                                String filename = String.valueOf(url.hashCode());
+                                FileCache fileCache = new FileCache(getContext());
+                                File f = new File(fileCache.getCacheDir(), filename);
+                                try {
+                                    f.createNewFile();
+                                    OutputStream os = new FileOutputStream(f);
+                                    FileUtils.CopyStream(bis, os);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                setImage(ImageSource.uri(f.getAbsolutePath()));
+                                setMaxScale(SubsamplingScaleImageView.SCALE_TYPE_CUSTOM);
+                                int width = getWidth();
+                                int height = getHeight();
+                                if (width == 0 || height == 0) {
+                                    width = AndroidUtils.getScreenWidth(getContext());
+                                    height = AndroidUtils.getScreenHeight(getContext());
+                                }
+                                if ((getSHeight() > height) && getSHeight() / getSWidth() > height / width) {
+                                    PointF center = new PointF(getSWidth() / 2, 0);
+                                    float targetScale = Math.max(width / (float) getSWidth(), height / (float) getSHeight());
+                                    setScaleAndCenter(targetScale, center);
                                 }
                             }
                         } finally {
                             dataSource.close();
-                            CloseableReference.closeSafely(imageReference);
+                            CloseableReference.closeSafely(bytes);
                         }
                     }
                 })
