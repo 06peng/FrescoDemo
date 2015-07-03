@@ -17,6 +17,7 @@
 package com.mzba.fresco.ui;
 
 import android.content.Intent;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -91,6 +92,17 @@ public class ImageListFragment extends Fragment {
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item, parent, false);
             return new ViewHolder(view);
+        }
+
+        @Override
+        public void onViewRecycled(ViewHolder holder) {
+            if (holder.mImageView.getController() != null) {
+                holder.mImageView.getController().onDetach();
+            }
+            if (holder.mImageView.getTopLevelDrawable() != null) {
+                holder.mImageView.getTopLevelDrawable().setCallback(null);
+//                ((BitmapDrawable) holder.mImageView.getTopLevelDrawable()).getBitmap().recycle();
+            }
         }
 
         @Override
